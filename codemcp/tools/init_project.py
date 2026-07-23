@@ -4,6 +4,7 @@ import asyncio
 import logging
 import os
 import re
+import subprocess
 from typing import Any, Dict, List, Optional
 
 import tomli
@@ -115,7 +116,7 @@ async def _generate_chat_id(directory: str, description: Optional[str] = None) -
         # Return the chat ID in the format "number-human-readable-part"
         return f"{counter_value}-{human_readable_part}"
 
-    except Exception as e:
+    except (RuntimeError, OSError, subprocess.SubprocessError, ValueError) as e:
         logging.warning(f"Exception generating chat ID: {e!s}", exc_info=True)
         # Return a fallback ID in case of errors
         return f"0-{human_readable_part}"

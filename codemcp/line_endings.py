@@ -4,6 +4,7 @@
 
 import asyncio
 import os
+import re
 from pathlib import Path
 from typing import Literal, Optional
 
@@ -158,7 +159,7 @@ def check_gitattributes(file_path: str) -> Optional[str]:
             # Move up to the parent directory
             current_dir = current_dir.parent
 
-    except Exception:
+    except (OSError, re.error):
         pass  # Ignore any errors in parsing .gitattributes
 
     return None
@@ -200,7 +201,7 @@ def check_codemcp_toml(file_path: str) -> Optional[str]:
             # Move up to the parent directory
             current_dir = current_dir.parent
 
-    except Exception:
+    except (OSError, tomli.TOMLDecodeError):
         pass  # Ignore any errors in parsing codemcp.toml
 
     return None
@@ -219,7 +220,7 @@ def check_codemcprc() -> Optional[str]:
         if line_endings and line_endings.upper() in ("CRLF", "LF"):
             return line_endings.upper()
 
-    except Exception:
+    except (KeyError, TypeError):
         pass  # Ignore any errors in parsing ~/.codemcprc
 
     return None
@@ -297,7 +298,7 @@ async def detect_line_endings(
                 if b"\r\n" in content:
                     return "CRLF" if return_format == "format" else "\r\n"
                 return "LF" if return_format == "format" else "\n"
-        except Exception:
+        except OSError:
             # If there's an error reading the file, use the line ending preference
             line_ending = get_line_ending_preference(file_path)
             return (

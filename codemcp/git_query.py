@@ -218,7 +218,7 @@ async def get_ref_commit_chat_id(directory: str, ref_name: str) -> str | None:
         if matches:
             return matches[-1].strip()
         return None
-    except Exception as e:
+    except (RuntimeError, OSError, subprocess.SubprocessError) as e:
         logging.warning(
             f"Exception when getting reference commit chat ID: {e!s}", exc_info=True
         )
@@ -292,7 +292,7 @@ async def get_current_commit_hash(path: str, short: bool = True) -> str | None:
         if result.returncode == 0:
             return str(result.stdout.strip())
         return None
-    except Exception as e:
+    except (RuntimeError, OSError, subprocess.SubprocessError) as e:
         logging.warning(
             f"Exception when getting current commit hash: {e!s}", exc_info=True
         )

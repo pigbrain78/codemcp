@@ -3,6 +3,7 @@
 import logging
 import os
 import re
+import subprocess
 
 from .git_message import (
     update_commit_message_with_description,
@@ -246,7 +247,7 @@ async def commit_changes(
                 text=True,
                 check=False,
             )
-        except Exception as e:
+        except (RuntimeError, OSError, subprocess.SubprocessError) as e:
             return False, f"Failed to add to Git: {str(e)}"
 
         if add_result.returncode != 0:

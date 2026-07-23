@@ -82,7 +82,7 @@ def load_config() -> dict[str, Any]:
 
             # Merge user config with defaults
             _merge_configs(config, user_config)
-        except Exception as e:
+        except (OSError, tomli.TOMLDecodeError) as e:
             print(f"Error loading config from {config_path}: {e}")
 
     return config

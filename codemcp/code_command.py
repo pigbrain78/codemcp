@@ -49,7 +49,7 @@ def get_command_from_config(project_dir: str, command_name: str) -> Optional[Lis
                 return cast(List[str], cmd_config["command"])
 
         return None
-    except Exception as e:
+    except (OSError, tomli.TOMLDecodeError) as e:
         logging.error(f"Error loading {command_name} command: {e}")
         return None
 
@@ -83,7 +83,7 @@ async def check_for_changes(project_dir: str) -> bool:
 
         # If status output is not empty, there are changes
         return bool(status_result.stdout.strip())
-    except Exception as e:
+    except (RuntimeError, OSError, subprocess.SubprocessError) as e:
         logging.error(f"Error checking for git changes: {e}")
         return False
 

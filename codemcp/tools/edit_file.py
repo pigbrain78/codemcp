@@ -120,15 +120,11 @@ def apply_edit_pure(
                         old_lines = old_string.split("\n")
                         new_lines = new_string.split("\n")
 
-                        # Try to find the line number where the change occurs
-                        try:
-                            # This is a simplification; for exact matches this works,
-                            # but for fuzzy matches we would need a more sophisticated approach
-                            before_text = content.split(old_string)[0]
-                            line_num = before_text.count("\n")
-                        except Exception:
-                            # Fallback: just say it's at the start of the file
-                            line_num = 0
+                        # Find the line number where the change occurs
+                        # This is a simplification; for exact matches this works,
+                        # but for fuzzy matches we would need a more sophisticated approach
+                        before_text = content.split(old_string)[0]
+                        line_num = before_text.count("\n")
 
                         dotdot_patch.append(
                             {
@@ -168,15 +164,11 @@ def apply_edit_pure(
             old_lines = old_string.split("\n")
             new_lines = new_string.split("\n")
 
-            # Try to find the line number where the change occurs
-            try:
-                # This is a simplification; for exact matches this works,
-                # but for fuzzy matches we would need a more sophisticated approach
-                before_text = content.split(old_string)[0]
-                line_num = before_text.count("\n")
-            except Exception:
-                # Fallback: just say it's at the start of the file
-                line_num = 0
+            # Find the line number where the change occurs
+            # This is a simplification; for exact matches this works,
+            # but for fuzzy matches we would need a more sophisticated approach
+            before_text = content.split(old_string)[0]
+            line_num = before_text.count("\n")
 
             diff_patch.append(
                 {

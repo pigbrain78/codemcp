@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import logging
 from typing import Tuple
 
 from ..common import normalize_file_path
@@ -36,11 +35,10 @@ async def append_commit_hash(
     # Normalize the path
     normalized_path = normalize_file_path(path)
 
-    try:
-        current_hash = await get_current_commit_hash(normalized_path)
-        if current_hash:
-            return f"{result}\n\nCurrent commit hash: {current_hash}", current_hash
-    except Exception as e:
-        logging.warning(f"Failed to get current commit hash: {e}", exc_info=True)
+    # get_current_commit_hash never raises: it swallows its own errors and
+    # returns None (see its docstring).
+    current_hash = await get_current_commit_hash(normalized_path)
+    if current_hash:
+        return f"{result}\n\nCurrent commit hash: {current_hash}", current_hash
 
     return result, None

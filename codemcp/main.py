@@ -56,7 +56,7 @@ def get_files_respecting_gitignore(dir_path: Path, pattern: str = "**/*") -> Lis
                     gitignore_specs[directory] = pathspec.GitIgnoreSpec.from_lines(
                         ignore_lines
                     )
-            except Exception as e:
+            except (OSError, ValueError) as e:
                 # Log error but continue processing
                 logging.warning(f"Error reading .gitignore in {directory}: {e}")
 
@@ -247,7 +247,7 @@ def init_codemcp_project(path: str, python: bool = False) -> str:
                 check=True,
             )
             print("Set default Git user email")
-    except Exception as e:
+    except (subprocess.SubprocessError, OSError) as e:
         print(f"Warning: Could not configure Git user identity: {e}")
 
     # Select the appropriate template directory
@@ -469,7 +469,9 @@ def infer_config(path: str) -> None:
 
     commands = infer_commands_from_project(project_path)
 
-    lines = ["# codemcp configuration file (commands inferred by `codemcp infer-config`)"]
+    lines = [
+        "# codemcp configuration file (commands inferred by `codemcp infer-config`)"
+    ]
     if commands:
         lines.append("")
         lines.append("[commands]")
@@ -482,8 +484,12 @@ def infer_config(path: str) -> None:
     if commands:
         click.echo(f"Inferred commands: {', '.join(commands.keys())}")
     else:
-        click.echo("No commands could be inferred; codemcp.toml has no [commands] section.")
-    click.echo("Review and edit codemcp.toml before use — inferred commands are guesses.")
+        click.echo(
+            "No commands could be inferred; codemcp.toml has no [commands] section."
+        )
+    click.echo(
+        "Review and edit codemcp.toml before use — inferred commands are guesses."
+    )
 
 
 @cli.command()

@@ -79,7 +79,7 @@ def load_rule_from_file(file_path: str) -> Optional[Rule]:
             payload=payload,
             file_path=file_path,
         )
-    except Exception as e:
+    except (OSError, UnicodeDecodeError) as e:
         # If there's any error parsing the file, return None
         logging.error(f"Error loading rule from {file_path}: {e}")
         return None
