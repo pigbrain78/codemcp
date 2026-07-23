@@ -4,7 +4,7 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 import click
 import pathspec
@@ -357,6 +357,79 @@ def init_codemcp_project(path: str, python: bool = False) -> str:
     return success_msg
 
 
+def infer_commands_from_project(project_path: Path) -> Dict[str, List[str]]:
+    """Infer a starter `[commands]` table by looking for common project manifest files.
+
+    This is a best-effort heuristic intended to save typing for the common case;
+    the caller is expected to review the result before relying on it.
+
+    Args:
+        project_path: The project root to inspect
+
+    Returns:
+        A dict mapping command name (e.g. "format", "test") to an argv list
+    """
+    import json
+
+    import tomli
+
+    commands: Dict[str, List[str]] = {}
+
+    package_json_path = project_path / "package.json"
+    if package_json_path.exists():
+        try:
+            with open(package_json_path, "rb") as f:
+                package_json = json.load(f)
+            scripts = package_json.get("scripts", {})
+            for command_name in ("format", "lint", "test", "typecheck", "build"):
+                if command_name in scripts:
+                    commands[command_name] = ["npm", "run", command_name]
+        except (json.JSONDecodeError, OSError) as e:
+            logging.warning(f"Error reading {package_json_path}: {e}")
+
+    pyproject_path = project_path / "pyproject.toml"
+    if pyproject_path.exists():
+        try:
+            with open(pyproject_path, "rb") as f:
+                pyproject = tomli.load(f)
+            tool = pyproject.get("tool", {})
+            if "ruff" in tool:
+                commands.setdefault("format", ["ruff", "format"])
+                commands.setdefault("lint", ["ruff", "check", "--fix"])
+            if "black" in tool:
+                commands.setdefault("format", ["black", "."])
+            if "pyright" in tool:
+                commands.setdefault("typecheck", ["pyright"])
+            elif "mypy" in tool:
+                commands.setdefault("typecheck", ["mypy", "."])
+            if "pytest" in tool:
+                commands.setdefault("test", ["pytest"])
+        except (tomli.TOMLDecodeError, OSError) as e:
+            logging.warning(f"Error reading {pyproject_path}: {e}")
+
+    if (project_path / "Cargo.toml").exists():
+        commands.setdefault("format", ["cargo", "fmt"])
+        commands.setdefault("lint", ["cargo", "clippy", "--fix", "--allow-dirty"])
+        commands.setdefault("test", ["cargo", "test"])
+
+    if (project_path / "go.mod").exists():
+        commands.setdefault("format", ["gofmt", "-w", "."])
+        commands.setdefault("test", ["go", "test", "./..."])
+
+    makefile_path = project_path / "Makefile"
+    if makefile_path.exists():
+        try:
+            makefile_text = makefile_path.read_text()
+            targets = set(re.findall(r"(?m)^([a-zA-Z0-9_-]+):", makefile_text))
+            for command_name in ("format", "lint", "test", "typecheck", "build"):
+                if command_name in targets:
+                    commands.setdefault(command_name, ["make", command_name])
+        except OSError as e:
+            logging.warning(f"Error reading {makefile_path}: {e}")
+
+    return commands
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def cli(ctx: click.Context) -> None:
@@ -376,6 +449,41 @@ def init(path: str, python: bool) -> None:
     """
     result = init_codemcp_project(path, python)
     click.echo(result)
+
+
+@cli.command("infer-config")
+@click.argument("path", type=click.Path(), default=".")
+def infer_config(path: str) -> None:
+    """Infer a starter codemcp.toml from common project manifest files.
+
+    Looks at package.json, pyproject.toml, Cargo.toml, go.mod, and Makefile to guess
+    format/lint/test/typecheck/build commands. Refuses to run if codemcp.toml already
+    exists. The inferred commands are best-effort guesses — review codemcp.toml before use.
+    """
+    project_path = Path(path).resolve()
+    config_path = project_path / "codemcp.toml"
+
+    if config_path.exists():
+        click.echo(f"Error: {config_path} already exists, not overwriting", err=True)
+        exit(1)
+
+    commands = infer_commands_from_project(project_path)
+
+    lines = ["# codemcp configuration file (commands inferred by `codemcp infer-config`)"]
+    if commands:
+        lines.append("")
+        lines.append("[commands]")
+        for command_name, cmd in commands.items():
+            cmd_str = ", ".join(f'"{part}"' for part in cmd)
+            lines.append(f"{command_name} = [{cmd_str}]")
+    config_path.write_text("\n".join(lines) + "\n")
+
+    click.echo(f"Wrote {config_path}")
+    if commands:
+        click.echo(f"Inferred commands: {', '.join(commands.keys())}")
+    else:
+        click.echo("No commands could be inferred; codemcp.toml has no [commands] section.")
+    click.echo("Review and edit codemcp.toml before use — inferred commands are guesses.")
 
 
 @cli.command()
