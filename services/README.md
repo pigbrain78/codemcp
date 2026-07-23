@@ -36,6 +36,10 @@ The architectural constitution governing all of this lives at
   failures, duplicated work, unused agents, undocumented lessons) that
   notice and recommend, deduplicated by signature so they never nag.
   Nothing self-executes here either.
+- [`twin/`](./twin) — the Digital Twin: declared topology merged with
+  observed reality (agents, capabilities, activity, health) into one
+  structural model, with `GET /impact/{node}` for impact analysis before
+  changes — including sole-provider capability detection.
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a
