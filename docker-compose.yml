@@ -89,6 +89,22 @@ services:
     depends_on:
       - gateway
 
+  relay:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.relay.app:app --host 0.0.0.0 --port 8006
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      GATEWAY_API_KEY: dev-knowledge-key
+      RELAY_DB_PATH: /data/relay.db
+    volumes:
+      - relay-data:/data
+    ports:
+      - "8006:8006"
+    depends_on:
+      - gateway
+
   notion:
     build:
       context: .
@@ -108,3 +124,4 @@ volumes:
   ledger-data:
   knowledge-data:
   orchestrator-data:
+  relay-data:

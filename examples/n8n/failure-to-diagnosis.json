@@ -1,0 +1,48 @@
+{
+  "name": "Sovereign: AgentFailed -> Dispatch Diagnosis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sovereign-failure",
+        "options": {}
+      },
+      "id": "a1d2e3f4-0000-4000-8000-000000000001",
+      "name": "Failure Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "sovereign-failure"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8005/tasks",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ capability: 'diagnosis', input: { failed_agent: $json.body.payload.agent, error: $json.body.payload.error, correlation_id: $json.body.correlation_id } }) }}",
+        "options": {}
+      },
+      "id": "a1d2e3f4-0000-4000-8000-000000000002",
+      "name": "Dispatch Diagnosis via Manus Prime",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    }
+  ],
+  "connections": {
+    "Failure Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dispatch Diagnosis via Manus Prime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}

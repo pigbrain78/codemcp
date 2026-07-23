@@ -20,6 +20,11 @@ the `codemcp` package itself (different lifecycle, different deployable).
   endpoints with declared capabilities, tasks dispatch through a single
   front door, and every request/completion/failure is recorded on the
   ledger. Phase 3.
+- [`relay/`](./relay) — the Enterprise Event Bus: fans ledger events out
+  to webhook subscribers (n8n workflows and friends) with ordered,
+  at-least-once delivery, per-subscription filters and cursors, and a
+  delivery log. Importable n8n workflows live in
+  [`examples/n8n/`](../examples/n8n).
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a

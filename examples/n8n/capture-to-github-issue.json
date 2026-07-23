@@ -1,0 +1,50 @@
+{
+  "name": "Sovereign: Capture -> GitHub Issue",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sovereign-capture",
+        "options": {}
+      },
+      "id": "f3b1c9a0-0000-4000-8000-000000000001",
+      "name": "Capture Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "sovereign-capture"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.github.com/repos/YOUR_USER/YOUR_REPO/issues",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ title: 'Capture: ' + $json.body.payload.content.slice(0, 60), body: 'Project: ' + ($json.body.payload.project ?? 'none') + '\\n\\n' + $json.body.payload.content + '\\n\\nLedger event: ' + $json.body.id, labels: ($json.body.payload.tags ?? []) }) }}",
+        "options": {}
+      },
+      "id": "f3b1c9a0-0000-4000-8000-000000000002",
+      "name": "Create GitHub Issue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 0]
+    }
+  ],
+  "connections": {
+    "Capture Webhook": {
+      "main": [
+        [
+          {
+            "node": "Create GitHub Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
