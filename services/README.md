@@ -33,3 +33,21 @@ outside this repo's scope, not something to scaffold speculatively here.
 Phases 2 and 3's code-only pieces are in place; Phase 3's remaining work
 is pointing real specialist agents (Nebula AI or otherwise) at the
 orchestrator's agent contract — see `orchestrator/README.md`.
+
+## Running the whole stack
+
+Two ways:
+
+- **docker compose** — from the repo root (with `mcp-server-js` checked
+  out as a sibling): `docker compose up --build`. See the comments in
+  [`docker-compose.yml`](../docker-compose.yml) for the dev API keys and
+  the optional `notion` profile.
+- **Bare processes** — each service's README shows its `uv run uvicorn`
+  invocation; the gateway runs with `node src/index.js`.
+
+[`tests_e2e/`](./tests_e2e) boots the five core services as real
+processes plus a toy specialist agent and drives one idea through the
+entire pipeline (capture → ledger → knowledge search → agent dispatch →
+hash-chain verify). It runs as part of the normal test suite when `node`
+and the sibling `mcp-server-js` checkout are present, and skips with an
+explicit reason otherwise.

@@ -1,0 +1,110 @@
+# Project Sovereign — full local stack.
+#
+# Prereq: the mcp-server-js repo checked out as a sibling of this repo
+# (it provides the API Gateway). Then:
+#
+#   docker compose up --build
+#
+# The GATEWAY_API_KEYS below are throwaway development defaults so the
+# stack works out of the box; override them (e.g. via a .env file or real
+# secrets management) for anything beyond local development.
+#
+# The notion service only starts with the "notion" profile, since it needs
+# real credentials:
+#
+#   NOTION_API_TOKEN=secret_x NOTION_DATABASE_ID=y \
+#     docker compose --profile notion up --build
+
+services:
+  ledger:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.ledger.app:app --host 0.0.0.0 --port 8001
+    environment:
+      LEDGER_DB_PATH: /data/ledger.db
+    volumes:
+      - ledger-data:/data
+    ports:
+      - "8001:8001"
+
+  gateway:
+    build:
+      context: ../mcp-server-js/services/gateway
+    environment:
+      GATEWAY_PORT: "8080"
+      LEDGER_URL: http://ledger:8001
+      GATEWAY_API_KEYS: >-
+        {"dev-admin-key":{"role":"admin","name":"dev-admin"},
+         "dev-capture-key":{"role":"service","name":"pocket-os-capture-api"},
+         "dev-knowledge-key":{"role":"reader","name":"knowledge-graph"},
+         "dev-manus-key":{"role":"service","name":"manus-prime"}}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ledger
+
+  capture:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.capture.app:app --host 0.0.0.0 --port 8002
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      GATEWAY_API_KEY: dev-capture-key
+    ports:
+      - "8002:8002"
+    depends_on:
+      - gateway
+
+  knowledge:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.knowledge.app:app --host 0.0.0.0 --port 8003
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      GATEWAY_API_KEY: dev-knowledge-key
+      KNOWLEDGE_DB_PATH: /data/knowledge.db
+    volumes:
+      - knowledge-data:/data
+    ports:
+      - "8003:8003"
+    depends_on:
+      - gateway
+
+  orchestrator:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.orchestrator.app:app --host 0.0.0.0 --port 8005
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      GATEWAY_API_KEY: dev-manus-key
+      ORCHESTRATOR_DB_PATH: /data/orchestrator.db
+    volumes:
+      - orchestrator-data:/data
+    ports:
+      - "8005:8005"
+    depends_on:
+      - gateway
+
+  notion:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.notion.app:app --host 0.0.0.0 --port 8004
+    profiles: ["notion"]
+    environment:
+      KNOWLEDGE_URL: http://knowledge:8003
+      NOTION_API_TOKEN: ${NOTION_API_TOKEN:-}
+      NOTION_DATABASE_ID: ${NOTION_DATABASE_ID:-}
+    ports:
+      - "8004:8004"
+    depends_on:
+      - knowledge
+
+volumes:
+  ledger-data:
+  knowledge-data:
+  orchestrator-data:

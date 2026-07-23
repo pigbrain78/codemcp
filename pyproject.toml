@@ -69,7 +69,7 @@ line-ending = "auto"
 
 [tool.pytest.ini_options]
 # Pytest configuration
-testpaths = ["tests", "e2e"]
+testpaths = ["tests", "e2e", "services"]
 addopts = "-n auto --tb=native"
 asyncio_default_fixture_loop_scope = "function"
 
