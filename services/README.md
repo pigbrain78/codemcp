@@ -16,6 +16,10 @@ the `codemcp` package itself (different lifecycle, different deployable).
   manual copy-paste. Phase 2. Talks to the real Notion API using a token
   *you* provide when you run it — it has no access to any workspace by
   default.
+- [`orchestrator/`](./orchestrator) — Manus Prime: agents register as HTTP
+  endpoints with declared capabilities, tasks dispatch through a single
+  front door, and every request/completion/failure is recorded on the
+  ledger. Phase 3.
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a
@@ -26,5 +30,6 @@ rather than calling the ledger directly. `notion/` sits downstream of
 
 Phase 1's infra provisioning (Tailscale, a GCP project, Cloud SQL) is
 outside this repo's scope, not something to scaffold speculatively here.
-That's it for Phase 2's code-only pieces — dashboard sync would be next,
-once there's a dashboard to sync to.
+Phases 2 and 3's code-only pieces are in place; Phase 3's remaining work
+is pointing real specialist agents (Nebula AI or otherwise) at the
+orchestrator's agent contract — see `orchestrator/README.md`.
