@@ -105,6 +105,22 @@ services:
     depends_on:
       - gateway
 
+  evolution:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.evolution.app:app --host 0.0.0.0 --port 8007
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      GATEWAY_API_KEY: dev-manus-key
+      EVOLUTION_DB_PATH: /data/evolution.db
+    volumes:
+      - evolution-data:/data
+    ports:
+      - "8007:8007"
+    depends_on:
+      - gateway
+
   notion:
     build:
       context: .
@@ -125,3 +141,4 @@ volumes:
   knowledge-data:
   orchestrator-data:
   relay-data:
+  evolution-data:

@@ -2,6 +2,8 @@
 
 Standalone services for the Project Sovereign platform, kept separate from
 the `codemcp` package itself (different lifecycle, different deployable).
+The architectural constitution governing all of this lives at
+[`SOVEREIGN.md`](../SOVEREIGN.md) — new components must align with it.
 
 - [`ledger/`](./ledger) — the append-only, hash-chained event ledger (the
   "Enterprise Memory Layer" ledger). Phase 1.
@@ -25,6 +27,11 @@ the `codemcp` package itself (different lifecycle, different deployable).
   at-least-once delivery, per-subscription filters and cursors, and a
   delivery log. Importable n8n workflows live in
   [`examples/n8n/`](../examples/n8n).
+- [`evolution/`](./evolution) — the Evolution Engine: Evolution Records
+  (how the platform learned, with evidence), architectural genes with
+  lineage and evidence-based reputation, and a nightly reflection that
+  answers the constitution's five questions and produces human-approvable
+  proposals. Nothing self-executes.
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a
