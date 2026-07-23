@@ -131,6 +131,45 @@ test = ["./run_test.sh"]
             # Verify the result contains expected system prompt elements
             self.assertIn("You are an AI assistant", result_text)
 
+    async def test_init_project_with_claude_md(self):
+        """Test that InitProject folds a project-root CLAUDE.md into the system prompt."""
+        claude_md_path = os.path.join(self.temp_dir.name, "CLAUDE.md")
+        with open(claude_md_path, "w") as f:
+            f.write("# CLAUDE.md\n\nAlways write haikus before editing files.\n")
+
+        async with self.create_client_session() as session:
+            result_text = await self.call_tool_assert_success(
+                session,
+                "codemcp",
+                {
+                    "subtool": "InitProject",
+                    "path": self.temp_dir.name,
+                    "user_prompt": "Test with CLAUDE.md",
+                    "subject_line": "feat: test claude.md support",
+                    "reuse_head_chat_id": False,
+                },
+            )
+
+            self.assertIn("Project instructions from CLAUDE.md", result_text)
+            self.assertIn("Always write haikus before editing files.", result_text)
+
+    async def test_init_project_without_claude_md(self):
+        """Test that InitProject omits the CLAUDE.md section when no CLAUDE.md exists."""
+        async with self.create_client_session() as session:
+            result_text = await self.call_tool_assert_success(
+                session,
+                "codemcp",
+                {
+                    "subtool": "InitProject",
+                    "path": self.temp_dir.name,
+                    "user_prompt": "Test without CLAUDE.md",
+                    "subject_line": "feat: test missing claude.md",
+                    "reuse_head_chat_id": False,
+                },
+            )
+
+            self.assertNotIn("Project instructions from CLAUDE.md", result_text)
+
     async def test_init_project_complex_toml(self):
         """Test InitProject with a more complex TOML file that exercises all parsing features."""
         # Create a more complex codemcp.toml file with various data types

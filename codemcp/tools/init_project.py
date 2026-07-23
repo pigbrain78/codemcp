@@ -253,6 +253,16 @@ async def init_project(
             )
             raise ValueError(f"Error reading codemcp.toml file: {e!s}")
 
+        # If the project has a CLAUDE.md at its root, fold it into the system
+        # prompt too, for compatibility with Claude Code's convention of
+        # keeping project-specific instructions there.
+        claude_md_content = ""
+        claude_md_path = os.path.join(full_dir_path, "CLAUDE.md")
+        if os.path.exists(claude_md_path):
+            from ..async_file_utils import async_open_text
+
+            claude_md_content = await async_open_text(claude_md_path)
+
         # Default system prompt, cribbed from claude code
         # TODO: Figure out if we want Sonnet to make determinations about what
         # goes in the global prompt.  The current ARCHITECTURE.md rule is
@@ -305,10 +315,14 @@ This project uses Git commit hashes to track changes across conversations. After
         if command_docs:
             system_prompt += _generate_command_docs(command_docs)
 
-        # Combine system prompt, global prompt
+        # Combine system prompt, global prompt, and CLAUDE.md
         combined_prompt = system_prompt
         if project_prompt:
             combined_prompt += "\n\n" + project_prompt
+        if claude_md_content:
+            combined_prompt += (
+                "\n\n# Project instructions from CLAUDE.md\n\n" + claude_md_content
+            )
 
         return combined_prompt
     except Exception as e:
