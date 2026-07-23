@@ -153,6 +153,28 @@ services:
     depends_on:
       - gateway
 
+  heartbeat:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.heartbeat.app:app --host 0.0.0.0 --port 8010
+    environment:
+      KNOWLEDGE_URL: http://knowledge:8003
+      TWIN_URL: http://twin:8009
+      GHOST_URL: http://ghost:8008
+      RELAY_URL: http://relay:8006
+      EVOLUTION_URL: http://evolution:8007
+      TICK_SECONDS: "300"
+      REFLECT_EVERY_TICKS: "288"
+    ports:
+      - "8010:8010"
+    depends_on:
+      - knowledge
+      - twin
+      - ghost
+      - relay
+      - evolution
+
   notion:
     build:
       context: .

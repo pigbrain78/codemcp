@@ -40,6 +40,11 @@ The architectural constitution governing all of this lives at
   observed reality (agents, capabilities, activity, health) into one
   structural model, with `GET /impact/{node}` for impact analysis before
   changes — including sole-provider capability detection.
+- [`heartbeat/`](./heartbeat) — the pulse: drives knowledge/twin/ghost/
+  relay every tick and the Evolution Engine's reflection daily, retrying
+  failures on the next tick and exposing the loop's own health at
+  `GET /status`. Bootstrap the twin's view of the platform with
+  [`scripts/declare_topology.sh`](../scripts/declare_topology.sh).
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a
