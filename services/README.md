@@ -4,14 +4,18 @@ Standalone services for the Project Sovereign platform, kept separate from
 the `codemcp` package itself (different lifecycle, different deployable).
 
 - [`ledger/`](./ledger) — the append-only, hash-chained event ledger (the
-  "Enterprise Memory Layer" ledger).
+  "Enterprise Memory Layer" ledger). Phase 1.
+- [`capture/`](./capture) — the Pocket OS capture API: classifies incoming
+  captures and forwards them to the gateway as `CaptureCreated` events.
+  Phase 2.
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a
-Node/TypeScript-ecosystem component. The gateway talks to this ledger over
-HTTP — it's the only thing allowed to write to it.
+Node/TypeScript-ecosystem component. The gateway is the *only* thing
+allowed to write to the ledger — both `capture/` and any future service
+go through it rather than calling the ledger directly.
 
-This covers the code-only parts of the roadmap's Phase 1 ("Foundation").
-The rest of Phase 1 (provisioning Tailscale, a GCP project, and Cloud SQL)
-is infrastructure setup outside this repo's scope, not something to
-scaffold speculatively here.
+Phase 1's infra provisioning (Tailscale, a GCP project, Cloud SQL) is
+outside this repo's scope, not something to scaffold speculatively here.
+Phase 2's remaining pieces (semantic search / knowledge graph, Notion sync,
+dashboard sync) aren't built yet.
