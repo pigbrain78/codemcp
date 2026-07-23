@@ -121,6 +121,22 @@ services:
     depends_on:
       - gateway
 
+  ghost:
+    build:
+      context: .
+      dockerfile: services/Dockerfile
+    command: uvicorn services.ghost.app:app --host 0.0.0.0 --port 8008
+    environment:
+      GATEWAY_URL: http://gateway:8080
+      GATEWAY_API_KEY: dev-manus-key
+      GHOST_DB_PATH: /data/ghost.db
+    volumes:
+      - ghost-data:/data
+    ports:
+      - "8008:8008"
+    depends_on:
+      - gateway
+
   notion:
     build:
       context: .
@@ -142,3 +158,4 @@ volumes:
   orchestrator-data:
   relay-data:
   evolution-data:
+  ghost-data:

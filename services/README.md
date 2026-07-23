@@ -32,6 +32,10 @@ The architectural constitution governing all of this lives at
   lineage and evidence-based reputation, and a nightly reflection that
   answers the constitution's five questions and produces human-approvable
   proposals. Nothing self-executes.
+- [`ghost/`](./ghost) — the Ghost Team: quiet observers (recurring
+  failures, duplicated work, unused agents, undocumented lessons) that
+  notice and recommend, deduplicated by signature so they never nag.
+  Nothing self-executes here either.
 
 The matching **API Gateway** (auth, routing, audit logging, event dispatch)
 lives in the `mcp-server-js` repo at `services/gateway/`, since it's a
