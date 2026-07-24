@@ -21,6 +21,7 @@ if [ "$BASE_MODE" = "compose" ]; then
   RELAY=http://relay:8006;      EVOLUTION=http://evolution:8007
   GHOST=http://ghost:8008;      TWIN=http://twin:8009
   HEARTBEAT=http://heartbeat:8010
+  DASHBOARD=http://dashboard:8011
 else
   BASE="${BASE:-http://localhost}"
   LEDGER=$BASE:8001;    GATEWAY=$BASE:8080
@@ -29,6 +30,7 @@ else
   RELAY=$BASE:8006;     EVOLUTION=$BASE:8007
   GHOST=$BASE:8008;     TWIN=$BASE:8009
   HEARTBEAT=$BASE:8010
+  DASHBOARD=$BASE:8011
 fi
 
 declare_service() {
@@ -49,5 +51,6 @@ declare_service "{\"name\":\"evolution-engine\",\"depends_on\":[\"gateway\"],\"h
 declare_service "{\"name\":\"ghost-team\",\"depends_on\":[\"gateway\"],\"health_url\":\"$GHOST/health\"}"
 declare_service "{\"name\":\"digital-twin\",\"depends_on\":[\"gateway\"],\"health_url\":\"$TWIN/health\"}"
 declare_service "{\"name\":\"heartbeat\",\"depends_on\":[\"knowledge-graph\",\"digital-twin\",\"ghost-team\",\"event-relay\",\"evolution-engine\"],\"health_url\":\"$HEARTBEAT/health\"}"
+declare_service "{\"name\":\"dashboard\",\"depends_on\":[\"gateway\",\"digital-twin\",\"ghost-team\",\"evolution-engine\",\"heartbeat\"],\"health_url\":\"$DASHBOARD/health\"}"
 
 echo "topology declared to $TWIN_URL"

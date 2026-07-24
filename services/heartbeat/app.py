@@ -109,13 +109,15 @@ async def _call(client: httpx.AsyncClient, target: TargetStatus) -> None:
 async def _beat_forever() -> None:
     async with httpx.AsyncClient() as client:
         while True:
-            state.ticks += 1
+            # `state.ticks` counts *completed* rounds, so a reader of /status
+            # never sees a tick that its targets haven't actually run yet.
+            tick = state.ticks + 1
             for target in state.targets.values():
                 if target.cadence == "tick" or (
-                    target.cadence == "reflect"
-                    and state.ticks % REFLECT_EVERY_TICKS == 0
+                    target.cadence == "reflect" and tick % REFLECT_EVERY_TICKS == 0
                 ):
                     await _call(client, target)
+            state.ticks = tick
             await asyncio.sleep(TICK_SECONDS)
 
 
