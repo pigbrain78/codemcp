@@ -6,10 +6,13 @@ from typing import Any
 
 from ..common import normalize_file_path
 from ..git import is_git_repository
+from ..mcp import mcp
 from ..shell import run_command
+from .commit_utils import append_commit_hash
 
 __all__ = [
     "git_diff",
+    "git_diff_command",
     "render_result_for_assistant",
     "TOOL_NAME_FOR_PROMPT",
     "DESCRIPTION",
@@ -31,7 +34,7 @@ Example:
 """
 
 
-async def git_diff(
+async def git_diff_command(
     arguments: str | None = None,
     path: str | None = None,
     chat_id: str | None = None,
@@ -97,3 +100,49 @@ def render_result_for_assistant(output: dict[str, Any]) -> str:
         A formatted string representation of the results
     """
     return output.get("output", "")
+
+
+@mcp.tool()
+async def git_diff(
+    arguments: str | None = None,
+    path: str | None = None,
+    chat_id: str | None = None,
+    commit_hash: str | None = None,
+) -> str:
+    """Shows differences between commits, commit and working tree, etc. using git diff.
+    This tool is read-only and safe to use with any arguments.
+    The arguments parameter should be a string and will be interpreted as space-separated
+    arguments using shell-style tokenization (spaces separate arguments, quotes can be used
+    for arguments containing spaces, etc.).
+
+    Example:
+      GitDiff  # Show changes between working directory and index
+      GitDiff arguments="HEAD~1"  # Show changes between current commit and previous commit
+      GitDiff arguments="branch1 branch2"  # Show differences between two branches
+      GitDiff arguments="--stat"  # Show summary of changes instead of full diff
+
+    Args:
+        arguments: Optional arguments to pass to git diff as a string
+        path: The directory to execute the command in (must be in a git repository); defaults to the current directory
+        chat_id: The unique ID of the current chat session
+        commit_hash: Optional Git commit hash for version tracking
+
+    Returns:
+        A string with the git diff output
+    """
+    try:
+        chat_id = "" if chat_id is None else chat_id
+        normalized_path = normalize_file_path("." if path is None else path)
+
+        output = await git_diff_command(
+            arguments=arguments, path=normalized_path, chat_id=chat_id
+        )
+        result_for_assistant = output["resultForAssistant"]
+
+        result_for_assistant, _ = await append_commit_hash(
+            result_for_assistant, normalized_path, commit_hash
+        )
+        return result_for_assistant
+    except Exception as e:
+        logging.error(f"Error in git_diff: {e}", exc_info=True)
+        return f"Error executing git diff: {e}"

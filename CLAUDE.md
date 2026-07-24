@@ -71,12 +71,17 @@ server — either over stdio (`run()` → `mcp.run()`) or as an SSE/Starlette ap
 
 **Tool registration** (`codemcp/mcp.py`, `codemcp/tools/`): `mcp.py` creates the single
 shared `FastMCP("codemcp")` instance. Each file under `codemcp/tools/` (e.g. `edit_file.py`,
-`read_file.py`, `run_command.py`, `init_project.py`) defines one `@mcp.tool()`-registered
-async function; `codemcp/__init__.py` imports all of them (for side-effecting registration)
-before the server starts. `codemcp/tools/code_command.py` (`__init__.py`) is a
-sub-namespace that re-exports plain async helpers (`chmod`, `mv`, `rm`, `git_blame`,
-`git_diff`, `git_log`, `git_show`) that are not themselves separately-registered tools in the
-same way — check individual files before assuming a tool is user-facing.
+`read_file.py`, `run_command.py`, `init_project.py`, `git_diff.py`) defines a
+`@mcp.tool()`-registered async function; `codemcp/main.py` imports all of them (with
+`# noqa: F401`, for side-effecting registration) before the server starts — a tool file
+with no corresponding import in `main.py` is dead code from the running server's
+perspective even if it's fully implemented and covered by tests, since tests can call the
+function directly without going through the registration/import path. The read-only git
+tools (`git_diff.py`, `git_log.py`, `git_show.py`, `git_blame.py`) additionally expose an
+internal `<name>_command` helper (e.g. `git_diff_command`) that does the actual work and
+returns a dict; the `@mcp.tool()`-decorated public function of the same base name wraps it,
+formats the result as a string, and converts exceptions to an error string — the same
+split `git_grep`/`grep` and `render_result_for_assistant` pattern used in `grep.py`/`glob.py`.
 
 **Project config** (`codemcp.toml`, `codemcp/config.py`, `codemcp/code_command.py`):
 Every project that codemcp operates on has its own `codemcp.toml` in the git root, with an

@@ -16,6 +16,10 @@ from starlette.routing import Mount
 from .mcp import mcp
 from .tools.chmod import chmod  # noqa: F401
 from .tools.edit_file import edit_file  # noqa: F401
+from .tools.git_blame import git_blame  # noqa: F401
+from .tools.git_diff import git_diff  # noqa: F401
+from .tools.git_log import git_log  # noqa: F401
+from .tools.git_show import git_show  # noqa: F401
 from .tools.glob import glob  # noqa: F401
 from .tools.grep import grep  # noqa: F401
 from .tools.init_project import init_project  # noqa: F401
