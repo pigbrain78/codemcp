@@ -26,6 +26,7 @@ from .tools.init_project import init_project  # noqa: F401
 from .tools.ls import ls  # noqa: F401
 from .tools.mv import mv  # noqa: F401
 from .tools.read_file import read_file  # noqa: F401
+from .tools.regex_edit import regex_edit  # noqa: F401
 from .tools.rm import rm  # noqa: F401
 from .tools.run_command import run_command  # noqa: F401
 from .tools.think import think  # noqa: F401

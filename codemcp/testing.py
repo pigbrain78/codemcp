@@ -233,6 +233,11 @@ class MCPEndToEndTestCase(TestCase, unittest.IsolatedAsyncioTestCase):
 
             return await edit_file(**kwargs)
 
+        elif subtool == "RegexEdit":
+            from codemcp.tools.regex_edit import regex_edit
+
+            return await regex_edit(**kwargs)
+
         elif subtool == "LS":
             from codemcp.tools.ls import ls
 
