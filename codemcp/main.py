@@ -496,6 +496,85 @@ def infer_config(path: str) -> None:
     )
 
 
+def generate_rage_report(log_tail_lines: int = 200) -> str:
+    """Generate a diagnostic report for filing a bug report.
+
+    Includes codemcp/Python/git versions, the resolved config file path and
+    contents, and the tail of the most recent log file.
+
+    Args:
+        log_tail_lines: Number of trailing lines to include from the log file
+
+    Returns:
+        A string containing the formatted diagnostic report
+    """
+    import platform
+    import subprocess
+    from importlib.metadata import PackageNotFoundError, version
+
+    from .config import get_config_path, get_logger_path
+
+    sections: List[str] = []
+
+    try:
+        codemcp_version = version("codemcp")
+    except PackageNotFoundError:
+        codemcp_version = "unknown (not installed as a package)"
+
+    try:
+        git_version_result = subprocess.run(
+            ["git", "--version"], capture_output=True, text=True, check=False
+        )
+        git_version = (
+            git_version_result.stdout.strip() or git_version_result.stderr.strip()
+        )
+    except OSError as e:
+        git_version = f"unavailable: {e}"
+
+    sections.append(
+        "== Versions ==\n"
+        f"codemcp: {codemcp_version}\n"
+        f"Python: {platform.python_version()}\n"
+        f"Platform: {platform.platform()}\n"
+        f"Git: {git_version}"
+    )
+
+    config_path = get_config_path()
+    if config_path.exists():
+        try:
+            config_contents = config_path.read_text()
+        except OSError as e:
+            config_contents = f"<error reading file: {e}>"
+        sections.append(f"== Config ({config_path}) ==\n{config_contents}")
+    else:
+        sections.append(f"== Config ==\nNo config file found at {config_path}")
+
+    log_path = Path(get_logger_path()) / "codemcp.log"
+    if log_path.exists():
+        try:
+            lines = log_path.read_text(errors="replace").splitlines()
+            tail = "\n".join(lines[-log_tail_lines:])
+        except OSError as e:
+            tail = f"<error reading log file: {e}>"
+        sections.append(f"== Last {log_tail_lines} lines of {log_path} ==\n{tail}")
+    else:
+        sections.append(f"== Log ==\nNo log file found at {log_path}")
+
+    return "\n\n".join(sections)
+
+
+@cli.command()
+def rage() -> None:
+    """Print diagnostic information for filing a bug report.
+
+    Includes codemcp/Python/git versions, the resolved config file path and
+    contents, and the tail of the most recent log file. Review the output
+    before sharing it — the log may contain paths or command output from your
+    own projects.
+    """
+    click.echo(generate_rage_report())
+
+
 @cli.command()
 @click.argument("command", type=str)
 @click.argument("args", nargs=-1)
