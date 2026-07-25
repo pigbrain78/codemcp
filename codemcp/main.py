@@ -30,6 +30,7 @@ from .tools.regex_edit import regex_edit  # noqa: F401
 from .tools.rm import rm  # noqa: F401
 from .tools.run_command import run_command  # noqa: F401
 from .tools.think import think  # noqa: F401
+from .tools.web_fetch import web_fetch  # noqa: F401
 from .tools.write_file import write_file  # noqa: F401
 
 

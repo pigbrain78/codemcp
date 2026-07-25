@@ -305,6 +305,11 @@ class MCPEndToEndTestCase(TestCase, unittest.IsolatedAsyncioTestCase):
 
             return await git_blame(**kwargs)
 
+        elif subtool == "WebFetch":
+            from codemcp.tools.web_fetch import web_fetch
+
+            return await web_fetch(**kwargs)
+
         else:
             raise ValueError(f"Unknown subtool: {subtool}")
 

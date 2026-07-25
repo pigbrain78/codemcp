@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.12"
 
 [[package]]
@@ -167,6 +167,7 @@ dependencies = [
     { name = "editorconfig" },
     { name = "fastapi" },
     { name = "google-genai" },
+    { name = "httpx" },
     { name = "mcp", extra = ["cli"] },
     { name = "pathspec" },
     { name = "pyyaml" },
@@ -200,6 +201,7 @@ requires-dist = [
     { name = "editorconfig", specifier = ">=0.17.0" },
     { name = "fastapi", specifier = ">=0.115.12" },
     { name = "google-genai", specifier = ">=1.10.0" },
+    { name = "httpx", specifier = ">=0.27.0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.2.0" },
     { name = "pathspec", specifier = ">=0.12.1" },
     { name = "pyyaml", specifier = ">=6.0.0" },
